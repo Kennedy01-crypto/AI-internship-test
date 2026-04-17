@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vunoh Global Assistant</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --bg: #f4f6fb;
+            --card: #ffffff;
+            --text: #1d2939;
+            --muted: #667085;
+            --primary: #2255ff;
+            --primary-hover: #1d4be1;
+            --border: #d0d5dd;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Inter, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 16px;
+        }
+        .shell {
+            width: 100%;
+            max-width: 760px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(16, 24, 40, 0.06);
+        }
+        h1 {
+            margin: 0 0 8px;
+            font-size: 1.25rem;
+        }
+        p {
+            margin: 0 0 16px;
+            color: var(--muted);
+        }
+        textarea {
+            width: 100%;
+            min-height: 140px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 1rem;
+            resize: vertical;
+        }
+        button {
+            width: 100%;
+            margin-top: 12px;
+            border: 0;
+            border-radius: 10px;
+            background: var(--primary);
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 12px;
+            cursor: pointer;
+        }
+        button:hover { background: var(--primary-hover); }
+        button:disabled { opacity: 0.7; cursor: not-allowed; }
+        pre {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: #fafbff;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        @media (min-width: 768px) {
+            .shell { padding: 28px; }
+            button { width: auto; min-width: 150px; }
+        }
+    </style>
+</head>
+<body>
+    <main class="shell">
+        <h1>Vunoh Global Bootstrap</h1>
+        <p>Describe what you need help with. The assistant will structure the request and assign risk.</p>
+        <textarea id="userInput" placeholder="Example: I need help opening a business account and validating tax compliance in Canada."></textarea>
+        <button id="processBtn" type="button">Process</button>
+        <pre id="responseBox">Response will appear here...</pre>
+    </main>
+
+    <script>
+        const processBtn = document.getElementById("processBtn");
+        const userInputEl = document.getElementById("userInput");
+        const responseBox = document.getElementById("responseBox");
+
+        async function processRequest() {
+            const userInput = userInputEl.value.trim();
+            if (!userInput) {
+                responseBox.textContent = "Please enter a request first.";
+                return;
+            }
+
+            processBtn.disabled = true;
+            responseBox.textContent = "Processing...";
+
+            try {
+                const response = await fetch("/api/process-request/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ user_input: userInput })
+                });
+
+                const data = await response.json();
+                responseBox.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                responseBox.textContent = `Request failed: ${error}`;
+            } finally {
+                processBtn.disabled = false;
+            }
+        }
+
+        processBtn.addEventListener("click", processRequest);
+    </script>
+</body>
+</html>

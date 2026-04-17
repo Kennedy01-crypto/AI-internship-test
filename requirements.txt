@@ -1,0 +1,6 @@
+django==5.0.*
+dj-database-url
+python-dotenv
+whitenoise
+psycopg[binary]
+google-generativeai

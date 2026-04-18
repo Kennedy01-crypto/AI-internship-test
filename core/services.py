@@ -14,6 +14,7 @@ Always return valid JSON only, with no markdown.
 Required output shape:
 {
   "intent": "registration|banking|compliance|legal_support|unknown",
+  "summary": "A one-sentence summary of the request",
   "risk_score": 0.0,
   "employee_category": "finance|operations|legal",
   "steps": ["step 1", "step 2"],
@@ -93,8 +94,11 @@ Rules:
         if not isinstance(steps, list):
             steps = []
 
+        summary = str(payload.get("summary", f"Request regarding {intent}"))
+
         return {
             "intent": intent,
+            "summary": summary,
             "risk_score": risk_score,
             "employee_category": employee_category,
             "steps": [str(step) for step in steps],

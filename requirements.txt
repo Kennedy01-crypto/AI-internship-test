@@ -3,4 +3,4 @@ dj-database-url
 python-dotenv
 whitenoise
 psycopg[binary]
-google-generativeai
+groq

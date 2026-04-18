@@ -312,6 +312,15 @@ td {
     min-width: 700px; /* Forces horizontal scroll on mobile */
   }
 
+  /* Sticky First Column for Context */
+  th:first-child, td:first-child {
+    position: sticky;
+    left: 0;
+    background: white;
+    z-index: 10;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+  }
+
   th, td {
     white-space: nowrap; /* Prevents text wrapping, keeping the table clean */
   }

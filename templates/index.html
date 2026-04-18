@@ -11,18 +11,20 @@
     <main class="container">
       <header>
         <h1>Vunoh Global Assistant</h1>
-        <p class="subtitle">Convert client requests into structured tasks and risk assessments.</p>
+        <p class="subtitle">
+          Convert client requests into structured tasks and risk assessments.
+        </p>
       </header>
 
       <section>
-      <textarea
-        id="userInput"
-        placeholder="Example: I need help opening a business account and validating tax compliance in Canada."
-      ></textarea>
-      <button id="processBtn" type="button">
-        <span id="spinner" class="spinner"></span>
-        <span id="btnText">Process Request</span>
-      </button>
+        <textarea
+          id="userInput"
+          placeholder="Example: I need help opening a business account and validating tax compliance in Canada."
+        ></textarea>
+        <button id="processBtn" type="button">
+          <span id="spinner" class="spinner"></span>
+          <span id="btnText">Process Request</span>
+        </button>
       </section>
 
       <div id="resultArea" style="display: none">
@@ -66,7 +68,10 @@
         </section>
       </div>
 
-      <div id="errorBox" style="display: none; color: var(--error); margin-bottom: 20px"></div>
+      <div
+        id="errorBox"
+        style="display: none; color: var(--error); margin-bottom: 20px"
+      ></div>
 
       <section>
         <div
@@ -171,13 +176,34 @@
         try {
           const response = await fetch(`/api/tasks/${taskId}/status/`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": getCookie('csrftoken')
+            },
             body: JSON.stringify({ status: newStatus }),
           });
-          if (response.ok) loadDashboard();
+          if (response.ok) {
+              loadDashboard();
+          }
         } catch (err) {
           alert("Failed to update status");
         }
+      }
+
+      // Helper to get CSRF token from cookies
+      function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
       }
 
       async function processRequest() {

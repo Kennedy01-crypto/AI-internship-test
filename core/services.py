@@ -31,7 +31,11 @@ Required output shape:
 Rules:
 1) risk_score must be a float between 0.0 and 1.0 inclusive.
 2) If uncertain, use intent = "unknown" and employee_category = "operations".
-3) Never output text outside the JSON object.
+3) Assignment Mapping: 
+   - Money transfers/payments -> "finance"
+   - Service hires/logistics/general requests -> "operations"
+   - Document verification/contracts/compliance -> "legal"
+4) Never output text outside the JSON object.
 """
 
     def __init__(self) -> None:

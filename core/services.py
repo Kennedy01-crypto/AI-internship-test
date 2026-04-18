@@ -1,9 +1,12 @@
 import json
+import logging
 import os
 import re
 from typing import Any
 
 from groq import Groq
+
+logger = logging.getLogger(__name__)
 
 
 class AIRequestProcessor:
@@ -38,18 +41,21 @@ Rules:
         self.client = Groq(api_key=api_key)
 
     def process(self, user_input: str) -> dict[str, Any]:
-        response = self.client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[
-                {"role": "system", "content": self.SYSTEM_PROMPT},
-                {"role": "user", "content": user_input},
-            ],
-            # This ensures the model returns valid JSON
-            response_format={"type": "json_object"},
-            temperature=0.1,
-        )
+        try:
+            response = self.client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[
+                    {"role": "system", "content": self.SYSTEM_PROMPT},
+                    {"role": "user", "content": user_input},
+                ],
+                response_format={"type": "json_object"},
+                temperature=0.1,
+            )
+            raw_text = response.choices[0].message.content
+        except Exception as e:
+            logger.error(f"Groq API call failed: {e}")
+            raw_text = "{}"
         
-        raw_text = response.choices[0].message.content
         parsed = self._safe_parse_json(raw_text)
         return self._normalize_output(parsed)
 

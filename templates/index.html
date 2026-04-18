@@ -1,127 +1,247 @@
-<!DOCTYPE html>
+{% load static %}
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vunoh Global Assistant</title>
-    <style>
-        :root {
-            color-scheme: light;
-            --bg: #f4f6fb;
-            --card: #ffffff;
-            --text: #1d2939;
-            --muted: #667085;
-            --primary: #2255ff;
-            --primary-hover: #1d4be1;
-            --border: #d0d5dd;
-        }
-        * { box-sizing: border-box; }
-        body {
-            margin: 0;
-            font-family: Inter, Arial, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+  </head>
+  <body>
+    <main class="container">
+      <header>
+        <h1>Vunoh Global Assistant</h1>
+        <p class="subtitle">Convert client requests into structured tasks and risk assessments.</p>
+      </header>
+
+      <section>
+      <textarea
+        id="userInput"
+        placeholder="Example: I need help opening a business account and validating tax compliance in Canada."
+      ></textarea>
+      <button id="processBtn" type="button">
+        <span id="spinner" class="spinner"></span>
+        <span id="btnText">Process Request</span>
+      </button>
+      </section>
+
+      <div id="resultArea" style="display: none">
+        <section>
+          <div id="resBadge" class="badge">Category</div>
+          <h2 id="resSummary">Summary</h2>
+
+          <div class="risk-row">
+            <div id="riskDot" class="risk-indicator"></div>
+            <span style="font-size: 0.9rem"
+              >Risk Score: <strong id="riskValue">0.0</strong></span
+            >
+          </div>
+
+          <div style="margin-top: 20px">
+            <h3 style="font-size: 0.9rem; margin-bottom: 8px">Action Plan</h3>
+            <ul id="stepsList" class="step-list"></ul>
+          </div>
+
+          <div class="msg-grid">
+            <div class="msg-item">
+              <label>WhatsApp Draft</label>
+              <div id="msgWA" class="msg-content"></div>
+              <button class="copy-btn" onclick="copyText('msgWA')">Copy</button>
+            </div>
+            <div class="msg-item">
+              <label>Email Draft</label>
+              <div id="msgEmail" class="msg-content"></div>
+              <button class="copy-btn" onclick="copyText('msgEmail')">
+                Copy
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div id="errorBox" style="display: none; color: var(--error); margin-bottom: 20px"></div>
+
+      <section>
+        <div
+          style="
             display: flex;
-            justify-content: center;
-            padding: 16px;
-        }
-        .shell {
-            width: 100%;
-            max-width: 760px;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 20px;
-            box-shadow: 0 8px 32px rgba(16, 24, 40, 0.06);
-        }
-        h1 {
-            margin: 0 0 8px;
-            font-size: 1.25rem;
-        }
-        p {
-            margin: 0 0 16px;
-            color: var(--muted);
-        }
-        textarea {
-            width: 100%;
-            min-height: 140px;
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 12px;
-            font-size: 1rem;
-            resize: vertical;
-        }
-        button {
-            width: 100%;
-            margin-top: 12px;
-            border: 0;
-            border-radius: 10px;
-            background: var(--primary);
-            color: #fff;
-            font-size: 1rem;
-            font-weight: 600;
-            padding: 12px;
-            cursor: pointer;
-        }
-        button:hover { background: var(--primary-hover); }
-        button:disabled { opacity: 0.7; cursor: not-allowed; }
-        pre {
-            margin-top: 16px;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-            background: #fafbff;
-            overflow-x: auto;
-            white-space: pre-wrap;
-        }
-        @media (min-width: 768px) {
-            .shell { padding: 28px; }
-            button { width: auto; min-width: 150px; }
-        }
-    </style>
-</head>
-<body>
-    <main class="shell">
-        <h1>Vunoh Global Bootstrap</h1>
-        <p>Describe what you need help with. The assistant will structure the request and assign risk.</p>
-        <textarea id="userInput" placeholder="Example: I need help opening a business account and validating tax compliance in Canada."></textarea>
-        <button id="processBtn" type="button">Process</button>
-        <pre id="responseBox">Response will appear here...</pre>
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+          "
+        >
+          <h2 style="margin: 0">History</h2>
+          <button
+            onclick="loadDashboard()"
+            class="copy-btn"
+            style="width: auto; min-width: 80px"
+          >
+            Refresh
+          </button>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Summary & Intent</th>
+                <th>Risk</th>
+                <th>Assignment</th>
+                <th>Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="taskTableBody">
+              <tr>
+                <td colspan="6" style="text-align: center; color: var(--muted)">
+                  Loading tasks...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
     </main>
 
     <script>
-        const processBtn = document.getElementById("processBtn");
-        const userInputEl = document.getElementById("userInput");
-        const responseBox = document.getElementById("responseBox");
+      const processBtn = document.getElementById("processBtn");
+      const btnText = document.getElementById("btnText");
+      const spinner = document.getElementById("spinner");
+      const userInputEl = document.getElementById("userInput");
+      const resultArea = document.getElementById("resultArea");
+      const errorBox = document.getElementById("errorBox");
 
-        async function processRequest() {
-            const userInput = userInputEl.value.trim();
-            if (!userInput) {
-                responseBox.textContent = "Please enter a request first.";
-                return;
-            }
+      function copyText(id) {
+        const text = document.getElementById(id).innerText;
+        navigator.clipboard
+          .writeText(text)
+          .then(() => alert("Copied to clipboard!"));
+      }
 
-            processBtn.disabled = true;
-            responseBox.textContent = "Processing...";
+      async function loadDashboard() {
+        try {
+          const response = await fetch("/api/tasks/");
+          const tasks = await response.json();
+          const tbody = document.getElementById("taskTableBody");
 
-            try {
-                const response = await fetch("/api/process-request/", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ user_input: userInput })
-                });
+          if (tasks.length === 0) {
+            tbody.innerHTML =
+              '<tr><td colspan="6" style="text-align:center">No tasks found.</td></tr>';
+            return;
+          }
 
-                const data = await response.json();
-                responseBox.textContent = JSON.stringify(data, null, 2);
-            } catch (error) {
-                responseBox.textContent = `Request failed: ${error}`;
-            } finally {
-                processBtn.disabled = false;
-            }
+          tbody.innerHTML = tasks
+            .map(
+              (task) => `
+                    <tr>
+                        <td data-label="Code"><strong>#${task.id}</strong></td>
+                        <td data-label="Details">
+                            <div style="font-weight:600">${task.summary}</div>
+                            <div style="font-size:0.7rem; color:var(--muted)">${task.intent.toUpperCase()}</div>
+                        </td>
+                        <td data-label="Risk"><span class="badge" style="margin:0">${task.risk_score}</span></td>
+                        <td data-label="Owner">${task.employee_category}</td>
+                        <td data-label="Date" style="color:var(--muted)">${task.created_at}</td>
+                        <td data-label="Status">
+                            <select class="status-select status-${task.status}" onchange="updateTaskStatus(${task.id}, this.value)">
+                                <option value="pending" ${task.status === "pending" ? "selected" : ""}>Pending</option>
+                                <option value="in_progress" ${task.status === "in_progress" ? "selected" : ""}>In Progress</option>
+                                <option value="completed" ${task.status === "completed" ? "selected" : ""}>Completed</option>
+                            </select>
+                        </td>
+                    </tr>
+                `,
+            )
+            .join("");
+        } catch (err) {
+          console.error("Failed to load dashboard:", err);
+          const tbody = document.getElementById("taskTableBody");
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--error)">Failed to load tasks. Check if migrations were run.</td></tr>';
+        }
+      }
+
+      async function updateTaskStatus(taskId, newStatus) {
+        try {
+          const response = await fetch(`/api/tasks/${taskId}/status/`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: newStatus }),
+          });
+          if (response.ok) loadDashboard();
+        } catch (err) {
+          alert("Failed to update status");
+        }
+      }
+
+      async function processRequest() {
+        const userInput = userInputEl.value.trim();
+        if (!userInput) {
+          errorBox.textContent = "Please enter a request first.";
+          errorBox.style.display = "block";
+          return;
         }
 
-        processBtn.addEventListener("click", processRequest);
+        errorBox.style.display = "none";
+        resultArea.style.display = "none";
+        processBtn.disabled = true;
+        spinner.style.display = "inline-block";
+        btnText.textContent = "Analyzing...";
+
+        try {
+          const response = await fetch("/api/process-request/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user_input: userInput }),
+          });
+
+          const data = await response.json();
+          if (data.error) throw new Error(data.error);
+          renderResult(data);
+          loadDashboard(); // Refresh table after new task
+        } catch (error) {
+          errorBox.textContent = `Error: ${error.message}`;
+          errorBox.style.display = "block";
+        } finally {
+          processBtn.disabled = false;
+          spinner.style.display = "none";
+          btnText.textContent = "Process Request";
+        }
+      }
+
+      function renderResult(data) {
+        const structured = data.structured_data;
+        document.getElementById("resBadge").textContent =
+          data.employee_category;
+        document.getElementById("resSummary").textContent =
+          data.summary || "Client Request";
+
+        const score = data.risk_score;
+        document.getElementById("riskValue").textContent = score.toFixed(2);
+
+        const dot = document.getElementById("riskDot");
+        dot.style.background =
+          score > 0.7
+            ? "var(--error)"
+            : score > 0.3
+              ? "var(--warning)"
+              : "var(--success)";
+
+        const list = document.getElementById("stepsList");
+        list.innerHTML = structured.steps.map((s) => `<li>${s}</li>`).join("");
+
+        document.getElementById("msgWA").textContent =
+          structured.messages.whatsapp || "No draft generated.";
+        document.getElementById("msgEmail").textContent =
+          structured.messages.email || "No draft generated.";
+
+        resultArea.style.display = "block";
+        resultArea.scrollIntoView({ behavior: "smooth" });
+      }
+
+      processBtn.addEventListener("click", processRequest);
+
+      // Initial load
+      window.addEventListener("DOMContentLoaded", loadDashboard);
     </script>
-</body>
+  </body>
 </html>

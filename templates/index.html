@@ -55,6 +55,13 @@
                 Copy
               </button>
             </div>
+            <div class="msg-item">
+              <label>SMS Draft</label>
+              <div id="msgSMS" class="msg-content"></div>
+              <button class="copy-btn" onclick="copyText('msgSMS')">
+                Copy
+              </button>
+            </div>
           </div>
         </section>
       </div>
@@ -134,13 +141,13 @@
             .map(
               (task) => `
                     <tr>
-                        <td data-label="Code"><strong>#${task.id}</strong></td>
-                        <td data-label="Details">
+                        <td data-label="Task ID"><strong>#${task.id}</strong></td>
+                        <td data-label="Summary">
                             <div style="font-weight:600">${task.summary}</div>
                             <div style="font-size:0.7rem; color:var(--muted)">${task.intent.toUpperCase()}</div>
                         </td>
-                        <td data-label="Risk"><span class="badge" style="margin:0">${task.risk_score}</span></td>
-                        <td data-label="Owner">${task.employee_category}</td>
+                        <td data-label="Risk Score"><span class="badge" style="margin:0; background: ${task.risk_score > 0.7 ? '#f44336' : (task.risk_score > 0.3 ? '#ff9800' : '#4caf50')}">${task.risk_score}</span></td>
+                        <td data-label="Assignee">${task.employee_category}</td>
                         <td data-label="Date" style="color:var(--muted)">${task.created_at}</td>
                         <td data-label="Status">
                             <select class="status-select status-${task.status}" onchange="updateTaskStatus(${task.id}, this.value)">
@@ -233,6 +240,8 @@
           structured.messages.whatsapp || "No draft generated.";
         document.getElementById("msgEmail").textContent =
           structured.messages.email || "No draft generated.";
+        document.getElementById("msgSMS").textContent =
+          structured.messages.sms || "No draft generated.";
 
         resultArea.style.display = "block";
         resultArea.scrollIntoView({ behavior: "smooth" });

@@ -196,7 +196,7 @@ button:active {
 /* Message Grid */
 .msg-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 15px;
   margin-top: 20px;
 }
@@ -240,10 +240,52 @@ button:active {
   background: #d8d8d8;
 }
 
+/* Dashboard Table & Mobile Card Transformation */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+th {
+  text-align: left;
+  padding: 12px;
+  border-bottom: 2px solid #eee;
+  font-size: 0.85rem;
+  color: #666;
+  text-transform: uppercase;
+}
+
+td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  font-size: 0.95rem;
+}
+
+/* Status Styles */
+.status-select {
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  font-size: 0.85rem;
+  background: #fff;
+}
+
+.status-pending { border-left: 4px solid #ff9800; color: #e68a00; }
+.status-in_progress { border-left: 4px solid #2196f3; color: #1976d2; }
+.status-completed { border-left: 4px solid #4caf50; color: #388e3c; }
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .container {
-    padding: 20px;
+    padding: 15px;
+    border-radius: 0;
   }
 
   header h1 {
@@ -256,5 +298,45 @@ button:active {
 
   #processBtn {
     width: 100%;
+  }
+
+  /* Table to Card Conversion */
+  table, thead, tbody, th, td, tr {
+    display: block;
+  }
+
+  thead tr {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+  }
+
+  tr {
+    border: 1px solid #e0e0e0;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  }
+
+  td {
+    border: none;
+    position: relative;
+    padding-left: 40%;
+    text-align: left;
+    min-height: 30px;
+    display: flex;
+    align-items: center;
+  }
+
+  td:before {
+    content: attr(data-label);
+    position: absolute;
+    left: 10px;
+    width: 35%;
+    font-weight: 700;
+    color: #667eea;
+    font-size: 0.75rem;
+    text-transform: uppercase;
   }
 }

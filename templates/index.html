@@ -113,6 +113,7 @@
             </tbody>
           </table>
         </div>
+        <div id="paginationControls" class="pagination-container"></div>
       </section>
     </main>
 
@@ -124,6 +125,8 @@
       const resultArea = document.getElementById("resultArea");
       const errorBox = document.getElementById("errorBox");
 
+      let currentPage = 1;
+
       function copyText(id) {
         const text = document.getElementById(id).innerText;
         navigator.clipboard
@@ -131,21 +134,25 @@
           .then(() => alert("Copied to clipboard!"));
       }
 
-      async function loadDashboard() {
+      async function loadDashboard(page = 1) {
+        currentPage = page;
         try {
-          const response = await fetch("/api/tasks/");
+          const response = await fetch(`/api/tasks/?page=${page}`);
           if (!response.ok) {
             const errData = await response.json().catch(() => ({}));
             throw new Error(
               errData.error || `Server error: ${response.status}`,
             );
           }
-          const tasks = await response.json();
+          const data = await response.json();
+          const tasks = data.tasks;
+          const pagination = data.pagination;
           const tbody = document.getElementById("taskTableBody");
 
           if (tasks.length === 0) {
             tbody.innerHTML =
               '<tr><td colspan="6" style="text-align:center">No tasks found.</td></tr>';
+            renderPagination(null);
             return;
           }
 
@@ -172,12 +179,28 @@
                 `,
             )
             .join("");
+
+          renderPagination(pagination);
         } catch (err) {
           console.error("Failed to load dashboard:", err);
           const tbody = document.getElementById("taskTableBody");
           tbody.innerHTML =
             '<tr><td colspan="6" style="text-align:center; color:var(--error)">Failed to load tasks. Check if migrations were run.</td></tr>';
         }
+      }
+
+      function renderPagination(pagination) {
+        const container = document.getElementById("paginationControls");
+        if (!pagination || pagination.num_pages <= 1) {
+          container.innerHTML = "";
+          return;
+        }
+
+        container.innerHTML = `
+          <button class="pagination-btn" ${!pagination.has_previous ? "disabled" : ""} onclick="loadDashboard(${pagination.number - 1})">Previous</button>
+          <span style="font-size: 0.85rem; color: var(--muted)">Page ${pagination.number} of ${pagination.num_pages}</span>
+          <button class="pagination-btn" ${!pagination.has_next ? "disabled" : ""} onclick="loadDashboard(${pagination.number + 1})">Next</button>
+        `;
       }
 
       async function updateTaskStatus(taskId, newStatus) {
@@ -194,7 +217,7 @@
             const errData = await response.json().catch(() => ({}));
             throw new Error(errData.error || "Update failed");
           }
-          loadDashboard();
+          loadDashboard(currentPage);
         } catch (err) {
           alert(`Error: ${err.message}`);
         }

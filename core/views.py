@@ -1,5 +1,6 @@
 import json
 
+from django.core.paginator import Paginator
 from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -68,19 +69,31 @@ def process_request(request):
 def list_tasks(request):
     """Returns all tasks ordered by newest first."""
     try:
-        tasks = Task.objects.all().order_by('-created_at')
-        data = [
-            {
-                "id": t.pk,
-                "intent": t.get_intent_display(),
-                "status": t.status,
-                "risk_score": round(t.risk_score, 2),
-                "employee_category": t.get_employee_category_display(),
-                "created_at": t.created_at.strftime("%Y-%m-%d %H:%M"),
-                "summary": t.structured_data.get("summary", "No summary available")
-            } for t in tasks
-        ]
-        return JsonResponse(data, safe=False)
+        page_number = request.GET.get('page', 1)
+        tasks_queryset = Task.objects.all().order_by('-created_at')
+        paginator = Paginator(tasks_queryset, 10)  # 10 tasks per page
+        page_obj = paginator.get_page(page_number)
+
+        data = {
+            "tasks": [
+                {
+                    "id": t.pk,
+                    "intent": t.get_intent_display(),
+                    "status": t.status,
+                    "risk_score": round(t.risk_score, 2),
+                    "employee_category": t.get_employee_category_display(),
+                    "created_at": t.created_at.strftime("%Y-%m-%d %H:%M"),
+                    "summary": t.structured_data.get("summary", "No summary available")
+                } for t in page_obj
+            ],
+            "pagination": {
+                "has_next": page_obj.has_next(),
+                "has_previous": page_obj.has_previous(),
+                "number": page_obj.number,
+                "num_pages": paginator.num_pages,
+            }
+        }
+        return JsonResponse(data)
     except Exception as e:
         return JsonResponse({"error": f"Database error: {str(e)}"}, status=500)
 

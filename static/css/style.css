@@ -325,3 +325,35 @@ td {
     white-space: nowrap; /* Prevents text wrapping, keeping the table clean */
   }
 }
+
+/* Pagination */
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.pagination-btn {
+  padding: 8px 16px;
+  background: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: #667eea;
+  width: auto !important;
+  margin: 0 !important;
+}
+
+.pagination-btn:disabled {
+  color: #ccc;
+  cursor: not-allowed;
+  border-color: #eee;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #eef2ff;
+  border-color: #667eea;
+}

@@ -1,12 +1,12 @@
-# Vunoh Global Bootstrap (Django 5 + Supabase + Gemini)
+# Vunoh Global Bootstrap (Django 5 + Supabase + Groq)
 
-This project is a Django 5.0 boilerplate for processing diaspora client requests with Gemini AI, storing structured outputs in Supabase PostgreSQL, and exposing a simple vanilla HTML/JS interface.
+This project is a Django 5.0 boilerplate for processing diaspora client requests with Groq (Llama 3.3), storing structured outputs in Supabase PostgreSQL, and exposing a simple vanilla HTML/JS interface.
 
 ## Stack
 
 - Backend: Django 5 (`core` app)
 - Database: PostgreSQL (Supabase via `SUPABASE_DB_URL`)
-- AI: Gemini (`google-generativeai`)
+- AI: Groq (`groq`)
 - Frontend: Server-rendered template + vanilla JavaScript `fetch()`
 - Static files: WhiteNoise
 
@@ -17,7 +17,7 @@ This project is a Django 5.0 boilerplate for processing diaspora client requests
 - `manage.py` - Django management entrypoint
 - `vunoh_assistant/settings.py` - Django configuration (DB + static + env)
 - `core/models.py` - `Client`, `Task`, `CommunicationLog`
-- `core/services.py` - `GeminiProcessor` service layer
+- `core/services.py` - `AIRequestProcessor` service layer
 - `core/views.py` - page view + API processing endpoint
 - `core/urls.py` - app routes
 - `templates/index.html` - mobile-first UI
@@ -44,7 +44,7 @@ This project is a Django 5.0 boilerplate for processing diaspora client requests
       "user_input": "I need help with business banking and compliance"
     }
     ```
-  - Calls Gemini through `GeminiProcessor`
+  - Calls Groq through `AIRequestProcessor`
   - Persists `Task` and `CommunicationLog`
   - Returns structured JSON response
 
@@ -53,7 +53,7 @@ This project is a Django 5.0 boilerplate for processing diaspora client requests
 Copy `.env.example` to `.env` and fill values:
 
 - `SUPABASE_DB_URL` - PostgreSQL connection URL from Supabase
-- `GEMINI_API_KEY` - Gemini API key
+- `GROQ_API_KEY` - Groq API key
 - `DJANGO_SECRET_KEY` - Django secret key
 - `DJANGO_DEBUG` - `True` or `False`
 - `DJANGO_ALLOWED_HOSTS` - comma-separated hosts
@@ -85,5 +85,5 @@ Open: `http://127.0.0.1:8000/`
 
 ## Notes
 
-- `GeminiProcessor` enforces `risk_score` in the range `0.0` to `1.0`.
-- If Gemini returns non-JSON or partial JSON, the service attempts safe extraction and normalization.
+- `AIRequestProcessor` enforces `risk_score` in the range `0.0` to `1.0`.
+- If the AI returns non-JSON or partial JSON, the service attempts safe extraction and normalization.

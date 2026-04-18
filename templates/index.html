@@ -9,6 +9,7 @@
   </head>
   <body>
     <main class="container">
+      {% csrf_token %}
       <header>
         <h1>Vunoh Global Assistant</h1>
         <p class="subtitle">
@@ -29,7 +30,7 @@
 
       <div id="resultArea" style="display: none">
         <section>
-          <div id="resBadge" class="badge">Category</div>
+          <div id="resBadge" class="badge">Assigned To: ...</div>
           <h2 id="resSummary">Summary</h2>
 
           <div class="risk-row">
@@ -133,6 +134,12 @@
       async function loadDashboard() {
         try {
           const response = await fetch("/api/tasks/");
+          if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(
+              errData.error || `Server error: ${response.status}`,
+            );
+          }
           const tasks = await response.json();
           const tbody = document.getElementById("taskTableBody");
 
@@ -151,7 +158,7 @@
                             <div style="font-weight:600">${task.summary}</div>
                             <div style="font-size:0.7rem; color:var(--muted)">${task.intent.toUpperCase()}</div>
                         </td>
-                        <td data-label="Risk Score"><span class="badge" style="margin:0; background: ${task.risk_score > 0.7 ? '#f44336' : (task.risk_score > 0.3 ? '#ff9800' : '#4caf50')}">${task.risk_score}</span></td>
+                        <td data-label="Risk Score"><span class="badge" style="margin:0; background: ${task.risk_score > 0.7 ? "#f44336" : task.risk_score > 0.3 ? "#ff9800" : "#4caf50"}">${task.risk_score}</span></td>
                         <td data-label="Assignee">${task.employee_category}</td>
                         <td data-label="Date" style="color:var(--muted)">${task.created_at}</td>
                         <td data-label="Status">
@@ -168,7 +175,8 @@
         } catch (err) {
           console.error("Failed to load dashboard:", err);
           const tbody = document.getElementById("taskTableBody");
-          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--error)">Failed to load tasks. Check if migrations were run.</td></tr>';
+          tbody.innerHTML =
+            '<tr><td colspan="6" style="text-align:center; color:var(--error)">Failed to load tasks. Check if migrations were run.</td></tr>';
         }
       }
 
@@ -178,30 +186,34 @@
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              "X-CSRFToken": getCookie('csrftoken')
+              "X-CSRFToken": getCookie("csrftoken"),
             },
             body: JSON.stringify({ status: newStatus }),
           });
-          if (response.ok) {
-              loadDashboard();
+          if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.error || "Update failed");
           }
+          loadDashboard();
         } catch (err) {
-          alert("Failed to update status");
+          alert(`Error: ${err.message}`);
         }
       }
 
       // Helper to get CSRF token from cookies
       function getCookie(name) {
         let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
+        if (document.cookie && document.cookie !== "") {
+          const cookies = document.cookie.split(";");
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === name + "=") {
+              cookieValue = decodeURIComponent(
+                cookie.substring(name.length + 1),
+              );
+              break;
             }
+          }
         }
         return cookieValue;
       }
@@ -223,7 +235,10 @@
         try {
           const response = await fetch("/api/process-request/", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": getCookie("csrftoken"),
+            },
             body: JSON.stringify({ user_input: userInput }),
           });
 
@@ -244,7 +259,7 @@
       function renderResult(data) {
         const structured = data.structured_data;
         document.getElementById("resBadge").textContent =
-          data.employee_category;
+          `Assigned To: ${data.employee_category.toUpperCase()}`;
         document.getElementById("resSummary").textContent =
           data.summary || "Client Request";
 

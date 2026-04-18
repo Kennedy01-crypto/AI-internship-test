@@ -4,3 +4,4 @@ python-dotenv
 whitenoise
 psycopg[binary]
 groq
+gunicorn

@@ -15,7 +15,7 @@ ALLOWED_HOSTS = [h.strip() for h in os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:8000",
     "http://localhost:8000",
-]
+] + [h for h in os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",") if h]
 
 INSTALLED_APPS = [
     "django.contrib.admin",

@@ -300,43 +300,19 @@ td {
     width: 100%;
   }
 
-  /* Table to Card Conversion */
-  table, thead, tbody, th, td, tr {
-    display: block;
-  }
-
-  thead tr {
-    position: absolute;
-    top: -9999px;
-    left: -9999px;
-  }
-
-  tr {
-    border: 1px solid #e0e0e0;
-    margin-bottom: 15px;
+  /* Standard Table Scroll for Mobile */
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid #eee;
     border-radius: 8px;
-    padding: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
   }
 
-  td {
-    border: none;
-    position: relative;
-    padding-left: 40%;
-    text-align: left;
-    min-height: 30px;
-    display: flex;
-    align-items: center;
+  table {
+    min-width: 700px; /* Forces horizontal scroll on mobile */
   }
 
-  td:before {
-    content: attr(data-label);
-    position: absolute;
-    left: 10px;
-    width: 35%;
-    font-weight: 700;
-    color: #667eea;
-    font-size: 0.75rem;
-    text-transform: uppercase;
+  th, td {
+    white-space: nowrap; /* Prevents text wrapping, keeping the table clean */
   }
 }

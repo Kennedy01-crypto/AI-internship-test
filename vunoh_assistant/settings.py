@@ -55,7 +55,16 @@ WSGI_APPLICATION = "vunoh_assistant.wsgi.application"
 ASGI_APPLICATION = "vunoh_assistant.asgi.application"
 
 DATABASE_URL = os.getenv("SUPABASE_DB_URL", f"sqlite:///{BASE_DIR / 'db.sqlite3'}")
-DATABASES = {"default": dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=False)}
+
+if DEBUG:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+else:
+    DATABASES = {"default": dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=False)}
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},

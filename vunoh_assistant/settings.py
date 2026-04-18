@@ -59,10 +59,11 @@ USE_POSTGRES = os.getenv("USE_POSTGRES", "false").lower() == "true"
 
 if USE_POSTGRES:
     DATABASE_URL = os.getenv("SUPABASE_DB_URL", "").strip()
-    if DATABASE_URL and DATABASE_URL.startswith("postgres"):
-        DATABASES = {"default": dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=False)}
+    if DATABASE_URL:
+        # Use ssl_require=True for Supabase production connections
+        DATABASES = {"default": dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)}
     else:
-        raise ValueError("SUPABASE_DB_URL is not set or invalid")
+        raise ValueError("USE_POSTGRES is True but SUPABASE_DB_URL is not set.")
 else:
     DATABASES = {
         "default": {

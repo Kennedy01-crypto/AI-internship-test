@@ -1,12 +1,14 @@
 # Vunoh Assistant - Step-by-Step Setup and Run Guide
 
 This document provides a complete, tested step-by-step process to set up and run the Vunoh Assistant Django application locally on Windows 10. The application uses Django 5, PostgreSQL (via Supabase or local), Gemini AI, and serves a simple HTML/JS interface.
+This document provides a complete, tested step-by-step process to set up and run the Vunoh Assistant Django application locally on Windows 10. The application uses Django 5, PostgreSQL (via Supabase or local), Groq Llama 3.3 AI, and serves a simple HTML/JS interface.
 
 ## Prerequisites
 
 - Python 3.10+ installed (check with `python --version`)
 - Git (if cloning fresh)
 - Optional: Free Supabase account for PostgreSQL, Google AI Studio API key for Gemini
+- Optional: Free Supabase account for PostgreSQL, Groq API key
 
 ## Step 1: Clone and Navigate (if not already in directory)
 

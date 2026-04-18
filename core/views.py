@@ -6,7 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from .models import CommunicationLog, Task
-from .services import GeminiProcessor
+from .services import AIRequestProcessor
 
 
 def index(request):
@@ -26,7 +26,7 @@ def process_request(request):
         return JsonResponse({"error": "user_input is required."}, status=400)
 
     try:
-        processor = GeminiProcessor()
+        processor = AIRequestProcessor()
         structured = processor.process(user_input)
 
         task = Task.objects.create(
@@ -52,7 +52,7 @@ def process_request(request):
 
     return JsonResponse(
         {
-            "task_id": task.id,
+            "task_id": task.pk,
             "intent": task.intent,
             "status": task.status,
             "employee_category": task.employee_category,

@@ -3,10 +3,10 @@ import os
 import re
 from typing import Any
 
-import google.generativeai as genai
+from groq import Groq
 
 
-class GeminiProcessor:
+class AIRequestProcessor:
     SYSTEM_PROMPT = """
 You are an assistant that converts diaspora client requests into structured JSON.
 Always return valid JSON only, with no markdown.
@@ -31,16 +31,24 @@ Rules:
 """
 
     def __init__(self) -> None:
-        api_key = os.getenv("GEMINI_API_KEY")
+        api_key = os.getenv("GROQ_API_KEY")
         if not api_key:
-            raise ValueError("GEMINI_API_KEY is not configured.")
-        genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel("gemini-1.5-flash")
+            raise ValueError("GROQ_API_KEY is not configured.")
+        self.client = Groq(api_key=api_key)
 
     def process(self, user_input: str) -> dict[str, Any]:
-        prompt = f"{self.SYSTEM_PROMPT}\n\nUser input:\n{user_input}"
-        response = self.model.generate_content(prompt)
-        raw_text = response.text.strip() if hasattr(response, "text") and response.text else "{}"
+        response = self.client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "system", "content": self.SYSTEM_PROMPT},
+                {"role": "user", "content": user_input},
+            ],
+            # This ensures the model returns valid JSON
+            response_format={"type": "json_object"},
+            temperature=0.1,
+        )
+        
+        raw_text = response.choices[0].message.content
         parsed = self._safe_parse_json(raw_text)
         return self._normalize_output(parsed)
 

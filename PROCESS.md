@@ -1,6 +1,5 @@
 # Vunoh Assistant - Step-by-Step Setup and Run Guide
 
-This document provides a complete, tested step-by-step process to set up and run the Vunoh Assistant Django application locally on Windows 10. The application uses Django 5, PostgreSQL (via Supabase or local), Gemini AI, and serves a simple HTML/JS interface.
 This document provides a complete, tested step-by-step process to set up and run the Vunoh Assistant Django application locally on Windows 10. The application uses Django 5, PostgreSQL (via Supabase or local), Groq Llama 3.3 AI, and serves a simple HTML/JS interface.
 
 ## Prerequisites
@@ -61,8 +60,9 @@ Example `.env` content (fill your values):
 DJANGO_SECRET_KEY=your-super-secret-key-here-generate-with-django-admin-generate-a-long-one-at-least-50-chars-random
 DJANGO_DEBUG=True
 DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost
-SUPABASE_DB_URL=  # LEAVE BLANK FOR LOCAL SQLITE (delete placeholder value)
-GEMINI_API_KEY=your-gemini-api-key-from-ai.google.dev (optional for basic testing)
+USE_POSTGRES=True
+SUPABASE_DB_URL=postgresql://postgres:password@db.supabase.com:5432/postgres
+GROQ_API_KEY=your-groq-api-key
 ```
 
 - Generate SECRET_KEY: `python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"`

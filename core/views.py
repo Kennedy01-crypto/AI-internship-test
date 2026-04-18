@@ -3,18 +3,18 @@ import json
 from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods
 
 from .models import CommunicationLog, Task
 from .services import AIRequestProcessor
 
 
+@ensure_csrf_cookie
 def index(request):
     return render(request, "index.html")
 
 
-@csrf_exempt
 @require_http_methods(["POST"])
 @transaction.atomic
 def process_request(request):
@@ -67,21 +67,23 @@ def process_request(request):
 @require_http_methods(["GET"])
 def list_tasks(request):
     """Returns all tasks ordered by newest first."""
-    tasks = Task.objects.all().order_by('-created_at')
-    data = [
-        {
-            "id": t.pk,
-            "intent": t.get_intent_display(),
-            "status": t.status,
-            "risk_score": round(t.risk_score, 2),
-            "employee_category": t.get_employee_category_display(),
-            "created_at": t.created_at.strftime("%Y-%m-%d %H:%M"),
-            "summary": t.structured_data.get("summary", "No summary available")
-        } for t in tasks
-    ]
-    return JsonResponse(data, safe=False)
+    try:
+        tasks = Task.objects.all().order_by('-created_at')
+        data = [
+            {
+                "id": t.pk,
+                "intent": t.get_intent_display(),
+                "status": t.status,
+                "risk_score": round(t.risk_score, 2),
+                "employee_category": t.get_employee_category_display(),
+                "created_at": t.created_at.strftime("%Y-%m-%d %H:%M"),
+                "summary": t.structured_data.get("summary", "No summary available")
+            } for t in tasks
+        ]
+        return JsonResponse(data, safe=False)
+    except Exception as e:
+        return JsonResponse({"error": f"Database error: {str(e)}"}, status=500)
 
-@csrf_exempt
 @require_http_methods(["POST"])  # Using POST for simplicity in vanilla environments without complex middleware
 def update_task_status(request, task_id):
     """Updates the status of a specific task."""

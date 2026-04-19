@@ -87,3 +87,13 @@ Open: `http://127.0.0.1:8000/`
 
 - `AIRequestProcessor` enforces `risk_score` in the range `0.0` to `1.0`.
 - If the AI returns non-JSON or partial JSON, the service attempts safe extraction and normalization.
+
+## Decisions I made and why
+
+1. **Switch to Groq (Llama 3.3):** I migrated from Gemini to Groq because Groq provides extremely fast inference and a generous free tier for the `llama-3.3-70b-versatile` model, which excels at structured JSON output without requiring prepaid credits.
+2. **Service Layer Pattern:** I encapsulated AI logic within `AIRequestProcessor`. This keeps the views thin and makes the AI backend interchangeable (e.g., swapping Groq for OpenAI) without touching the Django logic.
+3. **Vanilla JS & Mobile-First UI:** To follow the "no-framework" constraint while maintaining a modern UX, I used CSS Grid/Flexbox and vanilla JS. I implemented a horizontally scrollable dashboard with sticky headers to ensure a desktop-like data density is usable on mobile devices.
+4. **Regex Fallback for JSON:** Even with JSON mode enabled, LLMs can occasionally wrap output in markdown. I implemented a regex-based extraction layer in `_safe_parse_json` to ensure the application remains robust against minor LLM formatting inconsistencies.
+5. **PostgreSQL/Supabase:** I chose Supabase for its developer-friendly PostgreSQL hosting. It allows for advanced querying and built-in security features that simple NoSQL options lack.
+6. **CSRF Security:** I transitioned from `@csrf_exempt` to full CSRF protection using `ensure_csrf_cookie` and custom headers in `fetch()` to ensure the API adheres to production security standards.
+7. **Atomic Transactions:** I used `@transaction.atomic` in the process view to ensure that a `Task` and its `CommunicationLog` are saved as a single unit, preventing partial data in the event of an error.
